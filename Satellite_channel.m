@@ -96,19 +96,22 @@ end
     d = sqrt(Alpha/(2*(Kr+1)));%variance
     ray_gain = gamma*[normrnd(u,d,1,Nscatter) + 1i*normrnd(u,d,1,Nscatter)]/sqrt(2);                          % Complex gain of each scatter
     ray_gain2 = [normrnd(0,1,1,Nscatter) + 1i*normrnd(0,1,1,Nscatter)]/sqrt(2)+(normrnd(sqrt(Kr),1,1,Nscatter));
-
+    disp('Sample values of ray_gain:');
+    disp(ray_gain(1:5));
+    disp('Sample values of ray_gain2:');
+    disp(ray_gain2(1:5));    
     %-------------------------------------------------------------------------%  
        max_i = min([size(ray_gain2, 1), size(rxarray, 1), size(txarray, 1)]);
 
 for ray = 1:Nray
-    scat = 1;                                                                         % Scatter Index
-    for i = 1:max_i
-        h_ray(i,:,ray) = (sqrt(Alpha*Kr/(Kr+1)))*ray_gain2(i,scat)*exp(-1j*2*pi*d_LOS/lambda)*(rxarray(i,1).*txarray(i,1)).*exp(-1i*2*pi*fc*tau(1))+(sqrt(Alpha/(Kr+1)))*ray_gain(1,scat)*(rxarray(i,scat)*txarray(i,scat)').*exp(-1i*2*pi*fc*tau(ray));
-    disp('h_ray:');
-    disp(h_ray);
-    end
-end 
-
+           scat = ray;                                                                         % Scatter Index
+           temp = (sqrt(Alpha*Kr/(Kr+1)))*ray_gain2(:, scat)*exp(-1j*2*pi*d_LOS/lambda)*rxarray(:, 1)*txarray(:, 1)'*exp(-1j*2*pi*fc*tau(1)) + (sqrt(Alpha/(Kr+1)))*ray_gain(scat)*rxarray(:, scat)*txarray(:, scat).'*exp(-1j*2*pi*fc*tau(ray));
+           h_ray(:, :, ray) = temp;
+           disp('Size of h_ray:');
+           disp(size(h_ray));
+           disp('Sample values from h_ray:');
+           disp(h_ray(:, :, 1));
+end
     h_ay = sum(h_ray, 4);                                                                                     
         
     for k = 1: no_of_subcarriers
